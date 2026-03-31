@@ -1,0 +1,21 @@
+{
+    "name":  "photobooth-native",
+    "private":  true,
+    "packageManager":  "pnpm@10.33.0",
+    "scripts":  {
+                    "dev":  "node ./scripts/ensure-prisma-client.mjs \u0026\u0026 concurrently -n web,api,worker -c blue,green,magenta \"corepack pnpm dev:web:raw\" \"corepack pnpm dev:api:raw\" \"corepack pnpm dev:worker:raw\"",
+                    "dev:web":  "corepack pnpm dev:web:raw",
+                    "dev:web:raw":  "corepack pnpm --filter @photobooth/web dev",
+                    "dev:api":  "node ./scripts/ensure-prisma-client.mjs \u0026\u0026 corepack pnpm dev:api:raw",
+                    "dev:api:raw":  "corepack pnpm --filter @photobooth/api dev",
+                    "dev:worker":  "node ./scripts/ensure-prisma-client.mjs \u0026\u0026 corepack pnpm dev:worker:raw",
+                    "dev:worker:raw":  "corepack pnpm --filter @photobooth/photo-worker dev",
+                    "build":  "node ./scripts/ensure-prisma-client.mjs \u0026\u0026 corepack pnpm -r build",
+                    "db:generate":  "corepack pnpm --filter @photobooth/db generate",
+                    "db:migrate":  "corepack pnpm --filter @photobooth/db migrate",
+                    "db:seed":  "corepack pnpm --filter @photobooth/db seed"
+                },
+    "devDependencies":  {
+                            "concurrently":  "^9.1.2"
+                        }
+}

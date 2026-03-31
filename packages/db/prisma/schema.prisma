@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum LocationStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+
+enum FrameTemplateType {
+  SINGLE
+  STRIP
+  COLLAGE
+}
+
+enum DeviceType {
+  WEB
+  KIOSK
+  RASPBERRY_PI
+}
+
+enum PhotoSessionStatus {
+  CREATED
+  CAPTURED
+  UPLOADED
+  PROCESSING
+  PROCESSED
+  DELIVERED
+  FAILED
+}
+
+enum PhotoProcessingStatus {
+  PENDING
+  QUEUED
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+model User {
+  id             String          @id @default(uuid())
+  fullName       String
+  email          String          @unique
+  passwordHash   String
+  role           Role            @default(USER)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  photoSessions  PhotoSession[]
+  passportStamps PassportStamp[]
+}
+
+model Location {
+  id             String           @id @default(uuid())
+  name           String
+  slug           String           @unique
+  description    String?
+  thumbnailUrl   String?
+  status         LocationStatus   @default(ACTIVE)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  frameTemplates FrameTemplate[]
+  photoSessions  PhotoSession[]
+  passportStamps PassportStamp[]
+}
+
+model FrameTemplate {
+  id                    String            @id @default(uuid())
+  name                  String
+  locationId            String
+  imageUrl              String
+  type                  FrameTemplateType @default(SINGLE)
+  isActive              Boolean           @default(true)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  location              Location          @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  selectedByPhotoAssets PhotoAsset[]
+
+  @@index([locationId, isActive])
+}
+
+model PhotoSession {
+  id          String             @id @default(uuid())
+  userId      String
+  locationId  String
+  deviceType  DeviceType         @default(WEB)
+  status      PhotoSessionStatus @default(CREATED)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location    Location           @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  photoAssets PhotoAsset[]
+
+  @@index([userId])
+  @@index([locationId])
+  @@index([status])
+}
+
+model PhotoAsset {
+  id                      String                @id @default(uuid())
+  sessionId               String
+  selectedFrameTemplateId String?
+  processingStatus        PhotoProcessingStatus @default(PENDING)
+  originalKey             String?
+  processedKey            String?
+  previewKey              String?
+  qrCodeKey               String?
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  session                 PhotoSession          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  selectedFrameTemplate   FrameTemplate?        @relation(fields: [selectedFrameTemplateId], references: [id], onDelete: SetNull)
+  passportStamps          PassportStamp[]
+
+  @@index([sessionId])
+  @@index([processingStatus])
+}
+
+model PassportStamp {
+  id         String     @id @default(uuid())
+  userId     String
+  locationId String
+  photoId    String
+  earnedAt   DateTime   @default(now())
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location   Location   @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  photo      PhotoAsset @relation(fields: [photoId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, locationId])
+  @@index([userId])
+  @@index([locationId])
+}

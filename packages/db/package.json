@@ -1,0 +1,32 @@
+{
+  "name": "@photobooth/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "corepack pnpm exec tsc -p tsconfig.json",
+    "generate": "corepack pnpm exec prisma generate --schema prisma/schema.prisma",
+    "migrate": "corepack pnpm exec prisma migrate deploy --schema prisma/schema.prisma",
+    "seed": "corepack pnpm exec tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.6.0",
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^16.4.7",
+    "pg-boss": "^10.1.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.14",
+    "prisma": "^6.6.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}

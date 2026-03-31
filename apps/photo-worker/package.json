@@ -1,0 +1,25 @@
+{
+    "name":  "@photobooth/photo-worker",
+    "version":  "0.1.0",
+    "private":  true,
+    "type":  "module",
+    "scripts":  {
+                    "dev":  "corepack pnpm exec tsc-watch -p tsconfig.json --onSuccess \"node dist/index.js\"",
+                    "build":  "corepack pnpm exec tsc -p tsconfig.json"
+                },
+    "dependencies":  {
+                         "@photobooth/db":  "workspace:*",
+                         "@photobooth/shared":  "workspace:*",
+                         "@prisma/client":  "^6.6.0",
+                         "dotenv":  "^16.4.7",
+                         "qrcode":  "^1.5.4",
+                         "sharp":  "^0.33.5"
+                     },
+    "devDependencies":  {
+                            "@types/node":  "^22.13.14",
+                            "@types/qrcode":  "^1.5.5",
+                            "tsx":  "^4.19.4",
+                            "typescript":  "^5.8.3",
+                            "tsc-watch":  "^6.2.1"
+                        }
+}

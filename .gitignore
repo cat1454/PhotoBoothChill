@@ -1,0 +1,16 @@
+node_modules
+.pnpm-store
+.corepack
+.next
+dist
+coverage
+*.log
+.env
+.env.local
+.env.*.local
+storage/runtime
+packages/db/generated
+apps/web/.next
+apps/api/dist
+apps/photo-worker/dist
+.smoke
