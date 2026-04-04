@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "corepack pnpm exec next dev -p 3000",
+    "dev": "corepack pnpm exec next dev -H 0.0.0.0 -p 3000",
     "build": "corepack pnpm exec next build"
   },
   "dependencies": {
     "@photobooth/shared": "workspace:*",
+    "fflate": "^0.8.2",
     "next": "15.2.4",
     "react": "19.0.0",
     "react-dom": "19.0.0"
