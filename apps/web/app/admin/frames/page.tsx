@@ -39,6 +39,7 @@ export default function AdminFramesPage() {
       ]);
       setFrames(frameData);
       setLocations(locationData);
+      setError(null);
       if (!draft.locationId && locationData[0]?.id) {
         setDraft((current) => ({ ...current, locationId: locationData[0].id }));
       }
@@ -48,7 +49,7 @@ export default function AdminFramesPage() {
   }
 
   useEffect(() => {
-    load();
+    void load();
   }, []);
 
   async function createFrame() {
@@ -57,13 +58,18 @@ export default function AdminFramesPage() {
       return;
     }
 
-    await apiFetch("/frame-templates", {
-      method: "POST",
-      token: auth.accessToken,
-      body: draft
-    });
-    setDraft((current) => ({ ...current, name: "", imageUrl: "" }));
-    await load();
+    try {
+      await apiFetch("/frame-templates", {
+        method: "POST",
+        token: auth.accessToken,
+        body: draft
+      });
+      setDraft((current) => ({ ...current, name: "", imageUrl: "" }));
+      setError(null);
+      await load();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Unable to create frame.");
+    }
   }
 
   async function saveFrame(item: FrameItem) {
@@ -72,12 +78,17 @@ export default function AdminFramesPage() {
       return;
     }
 
-    await apiFetch(`/frame-templates/${item.id}`, {
-      method: "PUT",
-      token: auth.accessToken,
-      body: item
-    });
-    await load();
+    try {
+      await apiFetch(`/frame-templates/${item.id}`, {
+        method: "PUT",
+        token: auth.accessToken,
+        body: item
+      });
+      setError(null);
+      await load();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Unable to save frame.");
+    }
   }
 
   async function deactivateFrame(id: string) {
@@ -86,70 +97,104 @@ export default function AdminFramesPage() {
       return;
     }
 
-    await apiFetch(`/frame-templates/${id}`, {
-      method: "DELETE",
-      token: auth.accessToken
-    });
-    await load();
+    try {
+      await apiFetch(`/frame-templates/${id}`, {
+        method: "DELETE",
+        token: auth.accessToken
+      });
+      setError(null);
+      await load();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Unable to deactivate frame.");
+    }
   }
 
   return (
-    <section className="grid two">
-      <div className="card stack">
-        <h1>Frame Templates</h1>
-        <input placeholder="Frame name" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
-        <select value={draft.locationId} onChange={(e) => setDraft({ ...draft, locationId: e.target.value })}>
-          {locations.map((location) => (
-            <option key={location.id} value={location.id}>
-              {location.name}
-            </option>
-          ))}
-        </select>
-        <input placeholder="Image URL" value={draft.imageUrl} onChange={(e) => setDraft({ ...draft, imageUrl: e.target.value })} />
-        <select value={draft.type} onChange={(e) => setDraft({ ...draft, type: e.target.value })}>
-          <option value="single">single</option>
-          <option value="strip">strip</option>
-          <option value="collage">collage</option>
-        </select>
-        <button className="primary" onClick={createFrame}>
-          Create frame
-        </button>
+    <section className="travel-admin-grid">
+      <div className="card travel-admin-card stack">
+        <div className="stack compact">
+          <span className="travel-eyebrow">Frame editor</span>
+          <h1>Point destinations to the right frame bundle</h1>
+          <p className="helper travel-hero-helper">Use a clean image URL and keep the template type aligned with the real layout behavior.</p>
+        </div>
+
+        <div className="travel-admin-form">
+          <input placeholder="Frame name" value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
+          <select value={draft.locationId} onChange={(event) => setDraft({ ...draft, locationId: event.target.value })}>
+            {locations.map((location) => (
+              <option key={location.id} value={location.id}>
+                {location.name}
+              </option>
+            ))}
+          </select>
+          <input placeholder="Image URL" value={draft.imageUrl} onChange={(event) => setDraft({ ...draft, imageUrl: event.target.value })} />
+          <select value={draft.type} onChange={(event) => setDraft({ ...draft, type: event.target.value })}>
+            <option value="single">single</option>
+            <option value="strip">strip</option>
+            <option value="collage">collage</option>
+          </select>
+          <button className="primary" onClick={createFrame} type="button">
+            Create frame
+          </button>
+        </div>
       </div>
-      <div className="card stack">
-        {frames.map((item) => (
-          <div className="card stack" key={item.id}>
-            <input
-              value={item.name}
-              onChange={(e) =>
-                setFrames((current) => current.map((entry) => (entry.id === item.id ? { ...entry, name: e.target.value } : entry)))
-              }
-            />
-            <input
-              value={item.imageUrl}
-              onChange={(e) =>
-                setFrames((current) => current.map((entry) => (entry.id === item.id ? { ...entry, imageUrl: e.target.value } : entry)))
-              }
-            />
-            <select
-              value={item.type}
-              onChange={(e) =>
-                setFrames((current) => current.map((entry) => (entry.id === item.id ? { ...entry, type: e.target.value } : entry)))
-              }
-            >
-              <option value="single">single</option>
-              <option value="strip">strip</option>
-              <option value="collage">collage</option>
-            </select>
-            <div className="toolbar">
-              <button className="primary" onClick={() => saveFrame(item)}>
-                Save
-              </button>
-              <button className="secondary" onClick={() => deactivateFrame(item.id)}>
-                Deactivate
-              </button>
-            </div>
+
+      <div className="card travel-admin-card stack">
+        <div className="travel-section-head">
+          <div>
+            <span className="travel-eyebrow">Current list</span>
+            <h2>Frame templates</h2>
           </div>
-        ))}
+          <span className="travel-inline-note">{frames.length} frame(s)</span>
+        </div>
+
+        <div className="travel-admin-list">
+          {frames.map((item) => (
+            <article className="travel-admin-list-item stack" key={item.id}>
+              <div className="travel-section-head">
+                <div>
+                  <strong>{item.name}</strong>
+                  <p className="helper">Location: {locations.find((location) => location.id === item.locationId)?.name ?? item.locationId}</p>
+                </div>
+                <span className="travel-chip">{item.type}</span>
+              </div>
+
+              <input
+                value={item.name}
+                onChange={(event) =>
+                  setFrames((current) => current.map((entry) => (entry.id === item.id ? { ...entry, name: event.target.value } : entry)))
+                }
+              />
+              <input
+                value={item.imageUrl}
+                onChange={(event) =>
+                  setFrames((current) => current.map((entry) => (entry.id === item.id ? { ...entry, imageUrl: event.target.value } : entry)))
+                }
+              />
+              <select
+                value={item.type}
+                onChange={(event) =>
+                  setFrames((current) => current.map((entry) => (entry.id === item.id ? { ...entry, type: event.target.value } : entry)))
+                }
+              >
+                <option value="single">single</option>
+                <option value="strip">strip</option>
+                <option value="collage">collage</option>
+              </select>
+
+              <div className="travel-admin-toolbar">
+                <button className="primary" onClick={() => saveFrame(item)} type="button">
+                  Save changes
+                </button>
+                <button className="secondary" onClick={() => deactivateFrame(item.id)} type="button">
+                  Deactivate
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        {frames.length === 0 ? <div className="travel-admin-empty">No frame templates found yet.</div> : null}
         {error ? <p className="error">{error}</p> : null}
       </div>
     </section>

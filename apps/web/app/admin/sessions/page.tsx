@@ -37,26 +37,56 @@ export default function AdminSessionsPage() {
     apiFetch<SessionItem[]>("/admin/sessions", {
       token: auth.accessToken
     })
-      .then(setSessions)
+      .then((data) => {
+        setSessions(data);
+        setError(null);
+      })
       .catch((reason: Error) => setError(reason.message));
   }, []);
 
   return (
-    <section className="card stack">
-      <h1>Recent Sessions</h1>
-      {sessions.map((session) => (
-        <div className="card stack" key={session.id}>
-          <strong>{session.location.name}</strong>
-          <span className="helper">
-            {session.user.fullName} · {session.user.email}
-          </span>
-          <span className="helper">
-            {session.status} · {new Date(session.createdAt).toLocaleString()}
-          </span>
-          {session.assets[0]?.previewUrl ? <img alt="Session preview" className="image-frame" src={session.assets[0].previewUrl} /> : null}
-          <span className="helper">Assets: {session.assets.length}</span>
+    <section className="card travel-admin-card stack">
+      <div className="travel-section-head">
+        <div>
+          <span className="travel-eyebrow">Recent capture activity</span>
+          <h1>Sessions and previews</h1>
         </div>
-      ))}
+        <span className="travel-inline-note">{sessions.length} session(s)</span>
+      </div>
+
+      <div className="travel-admin-sessions">
+        {sessions.map((session) => (
+          <article className="travel-admin-session" key={session.id}>
+            <div className="stack compact">
+              <div className="travel-section-head">
+                <div>
+                  <strong>{session.location.name}</strong>
+                  <p className="helper">{session.user.fullName} | {session.user.email}</p>
+                </div>
+                <span className="travel-chip">{session.status}</span>
+              </div>
+              <p className="helper">Created {new Date(session.createdAt).toLocaleString()}</p>
+              <div className="travel-chip-row">
+                {session.assets.map((asset, index) => (
+                  <span className="travel-chip" key={asset.id}>
+                    Asset {index + 1}: {asset.processingStatus}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="travel-admin-preview-shell">
+              {session.assets[0]?.previewUrl ? (
+                <img alt="Session preview" className="travel-admin-preview" src={session.assets[0].previewUrl} />
+              ) : (
+                <div className="travel-admin-empty">Preview pending</div>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
+
+      {sessions.length === 0 ? <div className="travel-admin-empty">No recent sessions found.</div> : null}
       {error ? <p className="error">{error}</p> : null}
     </section>
   );

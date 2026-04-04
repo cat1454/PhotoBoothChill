@@ -40,15 +40,28 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <section className="card stack">
-      <h1>Admin Login</h1>
-      <form className="stack" onSubmit={handleSubmit}>
+    <section className="card travel-admin-card stack">
+      <div className="stack compact">
+        <span className="travel-eyebrow">Admin access</span>
+        <h1>Sign in to manage locations and frames</h1>
+        <p className="helper travel-hero-helper">
+          This route stays lightweight so you can get into the operational tools quickly during demos and local testing.
+        </p>
+      </div>
+
+      <form className="travel-admin-form" onSubmit={handleSubmit}>
         <input name="email" type="email" placeholder="admin@photobooth.local" required />
         <input name="password" type="password" placeholder="Password" minLength={6} required />
         <button className="primary" disabled={submitting} type="submit">
-          {submitting ? "Signing in..." : "Sign in"}
+          {submitting ? "Signing in..." : "Continue to admin"}
         </button>
       </form>
+
+      <div className="travel-seed-card">
+        <strong>Seed credentials</strong>
+        <span>admin@photobooth.local / Admin123!</span>
+      </div>
+
       {error ? <p className="error">{error}</p> : null}
     </section>
   );
