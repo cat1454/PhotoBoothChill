@@ -1,5 +1,5 @@
-﻿import { Injectable, OnModuleInit } from "@nestjs/common";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { Injectable, OnModuleInit } from "@nestjs/common";
+import { access, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { EnvService } from "../config/env.js";
@@ -29,6 +29,15 @@ export class LocalStorageService implements OnModuleInit {
   async copyObject(sourceKey: string, targetKey: string): Promise<void> {
     const buffer = await this.readObject(sourceKey);
     await this.putObject(targetKey, buffer);
+  }
+
+  async hasObject(key: string): Promise<boolean> {
+    try {
+      await access(this.resolvePath(key));
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async deleteObject(key: string): Promise<void> {

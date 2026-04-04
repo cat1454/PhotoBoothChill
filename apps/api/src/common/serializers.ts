@@ -1,4 +1,4 @@
-﻿import { enumToApi } from "./api.js";
+import { enumToApi } from "./api.js";
 
 interface PublicStorage {
   getPublicUrl(key: string): string;
@@ -79,6 +79,8 @@ export function serializePhotoAsset(
     processedKey: string | null;
     previewKey: string | null;
     qrCodeKey: string | null;
+    originalsArchiveKey: string | null;
+    animatedFrameKey: string | null;
   },
   storage: PublicStorage
 ) {
@@ -90,7 +92,9 @@ export function serializePhotoAsset(
     originalUrl: asset.originalKey ? storage.getPublicUrl(asset.originalKey) : null,
     processedUrl: asset.processedKey ? storage.getPublicUrl(asset.processedKey) : null,
     previewUrl: asset.previewKey ? storage.getPublicUrl(asset.previewKey) : null,
-    qrCodeUrl: asset.qrCodeKey ? storage.getPublicUrl(asset.qrCodeKey) : null
+    qrCodeUrl: asset.qrCodeKey ? storage.getPublicUrl(asset.qrCodeKey) : null,
+    originalsArchiveUrl: asset.originalsArchiveKey ? storage.getPublicUrl(asset.originalsArchiveKey) : null,
+    animatedFrameUrl: asset.animatedFrameKey ? storage.getPublicUrl(asset.animatedFrameKey) : null
   };
 }
 

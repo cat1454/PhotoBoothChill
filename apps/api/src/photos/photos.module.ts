@@ -26,6 +26,7 @@ import { ok } from "../common/api.js";
 import { CurrentUser, type AuthenticatedRequestUser } from "../common/decorators/current-user.decorator.js";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard.js";
 import { serializePhotoAsset, serializePhotoSession } from "../common/serializers.js";
+import { EnvService } from "../config/env.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { QueueService } from "../queue/queue.service.js";
 import { LocalStorageService } from "../storage/local-storage.service.js";
@@ -44,7 +45,8 @@ class PhotosService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: LocalStorageService,
-    private readonly queue: QueueService
+    private readonly queue: QueueService,
+    private readonly env: EnvService
   ) {}
 
   private async findOwnedPhoto(photoId: string, user: AuthenticatedRequestUser) {
@@ -86,6 +88,7 @@ class PhotosService {
         id: photoId,
         sessionId,
         originalKey,
+        publicShareToken: randomUUID(),
         processingStatus: PhotoProcessingStatus.PENDING
       }
     });
@@ -97,7 +100,32 @@ class PhotosService {
       }
     });
 
-    return serializePhotoAsset(asset, this.storage);
+    return {
+      ...serializePhotoAsset(asset, this.storage),
+      downloadPageUrl: asset.publicShareToken ? `${this.env.webPublicUrl}/download/${asset.publicShareToken}` : null
+    };
+  }
+
+  async uploadSourceBundle(user: AuthenticatedRequestUser, photoId: string, file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException("Source bundle file is required.");
+    }
+
+    const asset = await this.findOwnedPhoto(photoId, user);
+    const sourceBundleKey = buildAssetKey("source", `${asset.id}.zip`);
+    await this.storage.putObject(sourceBundleKey, file.buffer);
+
+    await this.prisma.photoAsset.update({
+      where: { id: asset.id },
+      data: {
+        sourceBundleKey
+      }
+    });
+
+    return {
+      photoId: asset.id,
+      sourceBundleUploaded: true
+    };
   }
 
   async process(user: AuthenticatedRequestUser, dto: ProcessPhotoDto) {
@@ -138,7 +166,8 @@ class PhotosService {
 
     return {
       ...serializePhotoAsset(asset, this.storage),
-      session: serializePhotoSession(asset.session)
+      session: serializePhotoSession(asset.session),
+      downloadPageUrl: asset.publicShareToken ? `${this.env.webPublicUrl}/download/${asset.publicShareToken}` : null
     };
   }
 
@@ -147,7 +176,7 @@ class PhotosService {
 
     return {
       photoId: asset.id,
-      downloadUrl: asset.processedKey ? this.storage.getPublicUrl(asset.processedKey) : null,
+      downloadPageUrl: asset.publicShareToken ? `${this.env.webPublicUrl}/download/${asset.publicShareToken}` : null,
       qrCodeUrl: asset.qrCodeKey ? this.storage.getPublicUrl(asset.qrCodeKey) : null
     };
   }
@@ -170,6 +199,18 @@ class PhotosController {
     @Body("sessionId") sessionId: string
   ) {
     return this.photosService.upload(user, sessionId, file).then((data) => ok(data));
+  }
+
+  @Post(":id/source-bundle")
+  @ApiConsumes("multipart/form-data")
+  @ApiOperation({ summary: "Upload selected source bundle for public downloads" })
+  @UseInterceptors(FileInterceptor("file"))
+  uploadSourceBundle(
+    @CurrentUser() user: AuthenticatedRequestUser,
+    @Param("id") id: string,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    return this.photosService.uploadSourceBundle(user, id, file).then((data) => ok(data));
   }
 
   @Post("process")

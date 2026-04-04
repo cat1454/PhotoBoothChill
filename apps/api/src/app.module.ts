@@ -1,4 +1,4 @@
-﻿import { Module } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 
 import { AdminModule } from "./admin/admin.module.js";
 import { AuthModule } from "./auth/auth.module.js";
@@ -9,6 +9,7 @@ import { PassportModule } from "./passport/passport.module.js";
 import { PhotoSessionsModule } from "./photo-sessions/photo-sessions.module.js";
 import { PhotosModule } from "./photos/photos.module.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
+import { PublicModule } from "./public/public.module.js";
 import { QueueModule } from "./queue/queue.module.js";
 import { StorageModule } from "./storage/storage.module.js";
 
@@ -23,6 +24,7 @@ import { StorageModule } from "./storage/storage.module.js";
     FrameTemplatesModule,
     PhotoSessionsModule,
     PhotosModule,
+    PublicModule,
     PassportModule,
     AdminModule
   ]

@@ -1,4 +1,4 @@
-﻿export const PHOTO_PROCESS_JOB_NAME = "photo.process";
+export const PHOTO_PROCESS_JOB_NAME = "photo.process";
 
 export const USER_ROLES = ["user", "admin"] as const;
 export type UserRole = (typeof USER_ROLES)[number];
@@ -82,6 +82,8 @@ export interface ApiPhotoAsset {
   processedUrl: string | null;
   previewUrl: string | null;
   qrCodeUrl: string | null;
+  originalsArchiveUrl: string | null;
+  animatedFrameUrl: string | null;
 }
 
 export interface ApiPhotoSession {
@@ -100,6 +102,36 @@ export interface ApiPassportStamp {
   locationId: string;
   photoId: string;
   earnedAt: string;
+}
+
+export interface SourceBundleShotEntry {
+  shotId: string;
+  stillPath: string;
+  stillMimeType: string;
+  capturedAt: string;
+  durationSeconds: number;
+}
+
+export interface SourceBundleSlotEntry {
+  slotIndex: number;
+  shotId: string;
+  stillPath: string;
+  clipPath: string | null;
+  clipMimeType: string | null;
+  durationSeconds: number;
+}
+
+export interface PhotoSourceBundleMetadata {
+  version: 1;
+  photoId: string;
+  sessionId: string;
+  locationId: string;
+  frameTemplateId: string | null;
+  shotCount: number;
+  slotCount: number;
+  createdAt: string;
+  shots: SourceBundleShotEntry[];
+  slots: SourceBundleSlotEntry[];
 }
 
 export function createEnvelope<T>(data: T, meta: Record<string, unknown> = {}): ApiEnvelope<T> {
@@ -121,6 +153,9 @@ export function slugify(input: string): string {
     .replace(/-{2,}/g, "-");
 }
 
-export function buildAssetKey(type: "original" | "processed" | "preview" | "qr", filename: string): string {
+export function buildAssetKey(
+  type: "original" | "processed" | "preview" | "qr" | "source" | "archive" | "animated",
+  filename: string
+): string {
   return `${type}/${filename}`;
 }

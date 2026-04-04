@@ -111,10 +111,14 @@ model PhotoAsset {
   sessionId               String
   selectedFrameTemplateId String?
   processingStatus        PhotoProcessingStatus @default(PENDING)
+  publicShareToken        String?               @unique
   originalKey             String?
+  sourceBundleKey         String?
   processedKey            String?
   previewKey              String?
   qrCodeKey               String?
+  originalsArchiveKey     String?
+  animatedFrameKey        String?
   createdAt               DateTime              @default(now())
   updatedAt               DateTime              @updatedAt
   session                 PhotoSession          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
