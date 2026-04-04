@@ -84,7 +84,26 @@ async function seedLocationsAndFrames() {
       status: LocationStatus.ACTIVE
     }
   });
-await prisma.frameTemplate.upsert({
+
+  const daNang = await prisma.location.upsert({
+    where: { slug: "da-nang-city" },
+    update: {
+      name: "Da Nang City",
+      description: "Coastal city stop with a transparent postcard frame.",
+      thumbnailUrl: "/seed/da-nang.jpg",
+      status: LocationStatus.ACTIVE
+    },
+    create: {
+      id: "seed-location-da-nang",
+      name: "Da Nang City",
+      slug: "da-nang-city",
+      description: "Coastal city stop with a transparent postcard frame.",
+      thumbnailUrl: "/seed/da-nang.jpg",
+      status: LocationStatus.ACTIVE
+    }
+  });
+
+  await prisma.frameTemplate.upsert({
     where: { id: "seed-frame-hoian-01" },
     update: {
       name: "Hoi An Frame 01",
@@ -117,6 +136,25 @@ await prisma.frameTemplate.upsert({
       name: "Hue Frame 01",
       locationId: hue.id,
       imageUrl: "/frames/hue-frame-01.png",
+      type: FrameTemplateType.SINGLE,
+      isActive: true
+    }
+  });
+
+  await prisma.frameTemplate.upsert({
+    where: { id: "seed-frame-da-nang-01" },
+    update: {
+      name: "Da Nang Frame 01",
+      locationId: daNang.id,
+      imageUrl: "/frames/da-nang-frame-01/frame.png",
+      type: FrameTemplateType.SINGLE,
+      isActive: true
+    },
+    create: {
+      id: "seed-frame-da-nang-01",
+      name: "Da Nang Frame 01",
+      locationId: daNang.id,
+      imageUrl: "/frames/da-nang-frame-01/frame.png",
       type: FrameTemplateType.SINGLE,
       isActive: true
     }
