@@ -1,4 +1,4 @@
-﻿import "reflect-metadata";
+import "reflect-metadata";
 import "dotenv/config";
 
 import { ValidationPipe } from "@nestjs/common";
@@ -71,7 +71,7 @@ async function bootstrap() {
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup("docs", app, swaggerDocument);
 
-  await app.listen(env.apiPort);
+  await app.listen(env.apiPort, "0.0.0.0");
   console.log(`API listening on ${env.apiPublicUrl}`);
 }
 

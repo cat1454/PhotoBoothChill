@@ -14,3 +14,4 @@ apps/web/.next
 apps/api/dist
 apps/photo-worker/dist
 .smoke
+*.tsbuildinfo
